@@ -72,8 +72,7 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
                     let Floats : [Float] = Array(UnsafeBufferPointer(start: pcmData, count: Count)).map {Float($0) / 32768.0}
 
-                    var fftLength : Int = Floats.count
-                    while fftLength & (fftLength - 1) != 0 {fftLength += 1}
+                    let fftLength : Int = 4096
 
                     var Real      : [Float] = [Float](repeating: 0.0, count: fftLength)
                     var Imaginary : [Float] = [Float](repeating: 0.0, count: fftLength)
@@ -112,7 +111,7 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
                             let NumberOfBars : Int = 80
                             let MaxHeight : Float = 24.0
 
-                            let uniqueBinCount: Int = Magnitudes.count / 2
+                            let uniqueBinCount : Int = Magnitudes.count / 2
                             var Bars : [Float] = []
 
                             for i : Int in 0..<NumberOfBars
@@ -125,15 +124,18 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
                                 if StartBin >= EndBin {continue}
 
-                                let slice   : ArraySlice<Float> = Magnitudes[StartBin..<EndBin]
-                                let Average : Float = slice.reduce(0, +) / Float(slice.count)
+                                let slice : ArraySlice<Float> = Magnitudes[StartBin..<EndBin]
+                                let AverageMagnitude : Float = slice.reduce(0, +) / Float(slice.count)
 
-                                Bars.append(Average)
+                                Bars.append(AverageMagnitude)
                             }
 
-                            if let maxMagnitude = Bars.max(), maxMagnitude > 0 {
+                            if let maxMagnitude = Bars.max(), maxMagnitude > 0
+                            {
                                 Bars = Bars.map { $0 / maxMagnitude }
                             }
+
+                            print("\u{1b}[H\u{1b}[2J") // Clear display
 
                             for Height : Int in stride(from: Int(MaxHeight) - 1, through: 0, by: -1)
                             {
