@@ -19,6 +19,7 @@ final class Args
     static var FixedSize  : (Int,Int)?
 }
 
+// ignore warning
 struct Arguments : @preconcurrency ParsableCommand
 {
     @Option(
