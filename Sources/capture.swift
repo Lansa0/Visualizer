@@ -15,6 +15,8 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
     private let MAX_DECIBALS : Float = 60.0
 
+    private var PreviousHeights : [Int]?
+
     init(outputText c : String?, fixedSize s : (Int,Int)?)
     {
         if let c = c {OutputText = c}
@@ -106,7 +108,8 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
                         if !FixedSizeFlag 
                         {
                             guard let (Columns,Rows) = getTerminalSize() else{return}
-                            Width = Columns; Height = Rows
+                            Width = Columns
+                            Height = Rows
                         }
 
                         let UniqueBinCount : Int = Magnitudes.count / 2
@@ -150,18 +153,36 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
     private func output(_ decibals : [Float], _ rows : Int)
     {
+        var TempArray : [Int] = []
+
         let OutputHeight : Float = Float(rows)
         var Output : String = RESET_CURSOR
 
         for height : Int in stride(from: Int(OutputHeight) - 1, through: 0, by: -1)
         {
-            for (_,bar) in decibals.enumerated()
+            for (i,bar) in decibals.enumerated()
             {
+
                 let RelativeHeight: Int = Int(((OutputHeight)*bar).rounded())
-                Output.append(RelativeHeight >= height ? OutputText : " ")
+                TempArray.append(RelativeHeight)
+
+                // Smooth the visualizer to reduce flickering effect
+                // May need to tweek and test with different audio later
+                if let PreviousHeights = PreviousHeights, PreviousHeights[i] > RelativeHeight
+                {
+                    let SmoothenedHeight = Int(floor(Double((PreviousHeights[i]+RelativeHeight)/2)))
+                    Output.append(SmoothenedHeight >= height ? OutputText : " ")
+                }
+                else
+                {
+                    Output.append(RelativeHeight >= height ? OutputText : " ")
+                }
+
             }
             Output.append("\n")
         }
+        PreviousHeights = TempArray
+
         Output.removeLast()
         print(Output,terminator: "")
     }
