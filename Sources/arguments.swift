@@ -54,7 +54,7 @@ struct Arguments : @preconcurrency ParsableCommand
             """
         )
     )
-    var text : String = "|"
+    var text : String?
 
     @Option(
         name: [.short,.customLong("size")],
@@ -79,13 +79,16 @@ struct Arguments : @preconcurrency ParsableCommand
             Args.FontColour = COLOUR_MAP[colour.lowercased()]!
         }
 
-        if text.count == 1 {Args.OutputText = text}
+        if let text = text, text.count == 1 
+        {
+            Args.OutputText = text
+        }
 
         if let size = size
         {
-            let S : [String.SubSequence] = size.split(separator: "x",maxSplits: 2)
-            let Width  : Int? = Int(S[0])
-            let Height : Int? = Int(S[1])
+            let Dimensions : [String.SubSequence] = size.split(separator: "x",maxSplits: 2)
+            let Width  : Int? = Int(Dimensions[0])
+            let Height : Int? = Int(Dimensions[1])
 
             if let Width = Width, let Height = Height 
             {
