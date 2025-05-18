@@ -17,15 +17,18 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
     private var PreviousHeights : [Int]?
 
-    init(outputText c : String?, fixedSize s : (Int,Int)?)
+    init(outputText char : String?, fixedSize dimensions : (Int,Int)?)
     {
-        if let c = c {OutputText = c}
+        if let char = char
+        {
+            OutputText = char
+        }
 
-        if let s = s
+        if let dimensions = dimensions
         {
             FixedSizeFlag = true
-            Width = s.0
-            Height = s.1
+            Width = dimensions.0
+            Height = dimensions.1
         }
 
         super.init()
@@ -162,20 +165,19 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
         {
             for (i,bar) in decibals.enumerated()
             {
-
-                let RelativeHeight: Int = Int(((OutputHeight)*bar).rounded())
-                TempArray.append(RelativeHeight)
+                let RelativeHeight : Int = Int(((OutputHeight)*bar).rounded())
 
                 // Smooth the visualizer to reduce flickering effect
-                // May need to tweek and test with different audio later
                 if let PreviousHeights = PreviousHeights, PreviousHeights[i] > RelativeHeight
                 {
-                    let SmoothenedHeight = Int(floor(Double((PreviousHeights[i]+RelativeHeight)/2)))
+                    let SmoothenedHeight = max(PreviousHeights[i]-1, 0)
                     Output.append(SmoothenedHeight >= height ? OutputText : " ")
+                    TempArray.append(SmoothenedHeight)
                 }
                 else
                 {
                     Output.append(RelativeHeight >= height ? OutputText : " ")
+                    TempArray.append(RelativeHeight)
                 }
 
             }
