@@ -16,9 +16,22 @@ sigintSrc.setEventHandler {
 }
 sigintSrc.resume()
 
-print(CLEAR_SCREEN,HIDE_CURSOR)
-if let FontColour = Args.FontColour {print(FontColour)}
+let C = Capture(
+    outputText       : Args.OutputText,
+    fixedSize        : Args.FixedSize
+)
 
-let C : Capture = Capture(outputText : Args.OutputText, fixedSize : Args.FixedSize)
-Task{try await C.startCapture()}
+Task
+{
+    try await C.configureCapture(
+        showApplications : Args.ShowApplications,
+        includedApplications: Args.IncludedApplications
+    )
+
+    print(CLEAR_SCREEN,HIDE_CURSOR)
+    if let FontColour = Args.FontColour {print(FontColour)}
+
+    try await C.startCapture()
+}
+
 RunLoop.main.run()

@@ -14,6 +14,9 @@ let COLOUR_MAP : [String:String] = [
 @MainActor
 final class Args
 {
+    static var ShowApplications     : Bool = false
+    static var IncludedApplications : [String] = []
+
     static var FontColour : String?
     static var OutputText : String?
     static var FixedSize  : (Int,Int)?
@@ -22,6 +25,30 @@ final class Args
 // ignore warning
 struct Arguments : @preconcurrency ParsableCommand
 {
+
+    @Flag(
+        name: [.customShort("l"), .customLong("application-list")],
+        help: ArgumentHelp(
+            "List of all running applications",
+            discussion: """
+            Use this list to find the appropriate names to filter which applications will be recoreded
+
+            """
+        )
+    )
+    var application_list : Bool = false
+
+    @Option(
+        name: [.short, .customLong("app")],
+        help: ArgumentHelp(
+            "The name of the application included to be recoreded",
+            discussion: """
+            
+            """
+        )
+    )
+    var apps : [String] = []
+
     @Option(
         name: [.short, .customLong("colour")],
         help: ArgumentHelp(
@@ -44,7 +71,7 @@ struct Arguments : @preconcurrency ParsableCommand
     var colour : String?
 
     @Option(
-        name: [.short,.customLong("text")],
+        name: [.short, .customLong("text")],
         help: ArgumentHelp(
             "The text character used for visualization",
             discussion: """
@@ -58,12 +85,11 @@ struct Arguments : @preconcurrency ParsableCommand
     var text : String?
 
     @Option(
-        name: [.short,.customLong("size")],
+        name: [.short, .customLong("size")],
         help: ArgumentHelp(
             "Sets fixed visualizer size",
             discussion: """
-            Default nature of this program dynamically sizes the visualizer based on the terminal,
-            passing a fixed size will change this behaviour
+            Default nature of this program dynamically sizes the visualizer based on the terminal, passing a fixed size will change this behaviour
 
             Must be in the format <Width>x<Height> (i.e 80x24)
 
@@ -75,6 +101,13 @@ struct Arguments : @preconcurrency ParsableCommand
     @MainActor
     mutating  func run() throws
     {
+        Args.ShowApplications = application_list
+
+        for app in apps
+        {
+            Args.IncludedApplications.append(app.lowercased())
+        }
+
         if let colour = colour, COLOUR_MAP[colour.lowercased()] != nil
         {
             Args.FontColour = COLOUR_MAP[colour.lowercased()]!
