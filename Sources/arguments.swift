@@ -31,7 +31,7 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "List of all running applications",
             discussion: """
-            Use this list to find the appropriate names to filter which applications will be recoreded
+            Use this list to find the appropriate names to filter which applications will be recorded
 
             """
         )
@@ -43,7 +43,7 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "The name of the application included to be recoreded",
             discussion: """
-            
+
             """
         )
     )
