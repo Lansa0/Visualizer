@@ -3,6 +3,29 @@ import Accelerate
 
 let RESET_CURSOR : String = "\u{001B}[H"
 
+private func getTerminalSize() -> (COLUMNS : Int, ROWS : Int)?
+{
+    var w = winsize()
+    if ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0 {
+        let c : Int = Int(w.ws_col)
+        let r : Int = Int(w.ws_row)
+        return (c,r)
+    }
+    return nil
+}
+
+private func nextPower2(_ n : Int) -> Int
+{
+    var x = n-1
+    x |= x >> 1
+    x |= x >> 2
+    x |= x >> 4
+    x |= x >> 8
+    x |= x >> 16
+    return x+1
+}
+
+
 class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
     private var Configuration : SCStreamConfiguration?
@@ -122,10 +145,7 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
                 let ChannelSamples : UnsafeMutablePointer<Float> = ChannelData[channel]
                 let Floats : [Float] = Array(UnsafeBufferPointer(start: ChannelSamples, count: FrameLength))
 
-                // Getting next power of 2
-                // Horribly inefficient
-                var fftLength : Int = Floats.count
-                while fftLength & (fftLength - 1) != 0 {fftLength += 1}
+                let fftLength : Int = nextPower2(Floats.count)
 
                 var Real      : [Float] = [Float](repeating: 0.0, count: fftLength)
                 var Imaginary : [Float] = [Float](repeating: 0.0, count: fftLength)
@@ -188,17 +208,6 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
                 }
             }
         }
-    }
-
-    private func getTerminalSize() -> (COLUMNS : Int, ROWS : Int)?
-    {
-        var w = winsize()
-        if ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0 {
-            let c : Int = Int(w.ws_col)
-            let r : Int = Int(w.ws_row)
-            return (c,r)
-        }
-        return nil
     }
 
     // TODO
