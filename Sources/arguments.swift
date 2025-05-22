@@ -43,6 +43,10 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "The name of the application included to be recoreded",
             discussion: """
+            Adding an application that isn't currently running will not be recorded
+            The input name of the application is not case-sensitive, however it can't assume spelling
+            If an application has a space in its name, wrap the input in quotes ("<Application Name>")
+            More than one application can be added
 
             """
         )
@@ -54,16 +58,10 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "Colour of the visualizer",
             discussion: """
-            Defaults to terminal default font colour
-            Valid Options:
-                    - black
-                    - blue
-                    - cyan
-                    - green
-                    - magenta
-                    - red
-                    - white
-                    - yellow
+            Supports the codes 16-231 in the standard terminal 256-colour palette
+
+            Must be in the format <r>,<g>,<b> where each value is in the range 0-255 inclusive
+            (i.e 255,255,255)
 
             """
         )
@@ -75,8 +73,7 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "The text character used for visualization",
             discussion: """
-            Defaults to "|"
-            Must be one character long, else will default
+            Must be one character long, else will fall to default value
             Some characters may not display properly
 
             """
@@ -108,9 +105,24 @@ struct Arguments : @preconcurrency ParsableCommand
             Args.IncludedApplications.append(app.lowercased())
         }
 
-        if let colour = colour, COLOUR_MAP[colour.lowercased()] != nil
+        if let colour = colour
         {
-            Args.FontColour = COLOUR_MAP[colour.lowercased()]!
+            let Componenets : [String.SubSequence] = colour.split(separator: ",", maxSplits: 3)
+            let Red   : Int? = Int(Componenets[0])
+            let Green : Int? = Int(Componenets[1])
+            let Blue  : Int? = Int(Componenets[2])
+
+            if var r = Red, 0 <= r && r <= 255, var g = Green, 0 <= g && g <= 255, var b = Blue, 0 <= b && b <= 255
+            {
+                r = Int(Double(r) / 255.0 * 5.0 + 0.5)
+                g = Int(Double(g) / 255.0 * 5.0 + 0.5)
+                b = Int(Double(b) / 255.0 * 5.0 + 0.5)
+
+                let Code = 16 + (36 * r) + (6 * g) + b
+
+                Args.FontColour = "\u{001B}[38;5;\(Code)m"
+            }
+
         }
 
         if let text = text, text.count == 1 
