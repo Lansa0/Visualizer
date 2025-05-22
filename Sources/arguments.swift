@@ -1,16 +1,5 @@
 import ArgumentParser
 
-let COLOUR_MAP : [String:String] = [
-    "black"   : "\u{001B}[0;30m",
-    "blue"    : "\u{001B}[0;34m",
-    "cyan"    : "\u{001B}[0;36m",
-    "green"   : "\u{001B}[0;32m",
-    "magenta" : "\u{001B}[0;35m",
-    "red"     : "\u{001B}[0;31m",
-    "white"   : "\u{001B}[0;37m",
-    "yellow"  : "\u{001B}[0;33m"
-]
-
 @MainActor
 final class Args
 {
