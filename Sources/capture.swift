@@ -202,7 +202,7 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
                             Decibals.append(AverageDB / MAX_DECIBALS)
                         }
 
-                        self.output(Decibals,Height)
+                        self.output(Decibals)
 
                     }
                 }
@@ -210,22 +210,18 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
         }
     }
 
-    // TODO
-    // Fix the rows / height debacle
-    // function accepts a rows argument but I could just manually access the private var height
-    // which is the same thing
-    private func output(_ decibals : [Float], _ rows : Int)
+    private func output(_ decibals : [Float])
     {
         var TempArray : [Int] = []
 
-        let OutputHeight : Float = Float(rows)
+        let fHeight : Float = Float(Height)
         var Output : String = RESET_CURSOR
 
-        for height : Int in stride(from: rows - 1, through: 0, by: -1)
+        for height : Int in stride(from: Height - 1, through: 0, by: -1)
         {
             for (i,bar) in decibals.enumerated()
             {
-                let RelativeHeight : Int = Int(((OutputHeight)*bar).rounded())
+                let RelativeHeight : Int = Int(((fHeight)*bar).rounded())
 
                 // Smooth the visualizer to reduce flickering effect
                 if let PreviousHeights = PreviousHeights, PreviousHeights[i] > RelativeHeight
