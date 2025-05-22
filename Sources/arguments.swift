@@ -122,7 +122,6 @@ struct Arguments : @preconcurrency ParsableCommand
 
                 Args.FontColour = "\u{001B}[38;5;\(Code)m"
             }
-
         }
 
         if let text = text, text.count == 1 
