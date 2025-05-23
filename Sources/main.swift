@@ -18,7 +18,8 @@ sigintSrc.resume()
 
 let C = Capture(
     outputText       : Args.OutputText,
-    fixedSize        : Args.FixedSize
+    fixedSize        : Args.FixedSize,
+    audioRange       : Args.AudioRange
 )
 
 Task

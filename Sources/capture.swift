@@ -32,9 +32,9 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
     private var Filter        : SCContentFilter?
     private var Stream        : SCStream?
 
-    private var OutputText : String = "┃"
+    private let OutputText : String
 
-    private var FixedSizeFlag : Bool = false
+    private let FixedSizeFlag : Bool
     private var Width  : Int = 0
     private var Height : Int = 0
 
@@ -43,9 +43,16 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
     private let MIN_DECIBALS : Float
     private let MAX_DECIBALS : Float
 
-    init(outputText char : String?, fixedSize dimensions : (Int,Int)?)
+    init(outputText char : String?, fixedSize dimensions : (Int,Int)?, audioRange range : (Int,Int)?)
     {
-        if let char = char {OutputText = char}
+        if let char = char 
+        {
+            OutputText = char
+        } 
+        else
+        {
+            OutputText = "┃"
+        }
 
         if let dimensions = dimensions
         {
@@ -53,9 +60,21 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
             Width = dimensions.0
             Height = dimensions.1
         }
+        else
+        {
+            FixedSizeFlag = false
+        }
 
-        MIN_DECIBALS = 0.0
-        MAX_DECIBALS = 60.0
+        if let range = range
+        {
+            MIN_DECIBALS = Float(range.0)
+            MAX_DECIBALS = Float(range.1)
+        }
+        else
+        {
+            MIN_DECIBALS = 0.0
+            MAX_DECIBALS = 60.0
+        }
 
         super.init()
     }
@@ -197,9 +216,10 @@ class Capture: NSObject, SCStreamDelegate, SCStreamOutput {
 
                             let slice            : ArraySlice<Float> = Magnitudes[Start..<End]
                             let AverageMagnitude : Float = slice.reduce(0, +) / Float(End-Start)
-                            let AverageDB        : Float = max(20 * log10(AverageMagnitude),0.0)
+                            let AverageDB        : Float = max(20 * log10(AverageMagnitude),MIN_DECIBALS) - MIN_DECIBALS
 
-                            Decibals.append(AverageDB / MAX_DECIBALS)
+                            let RANGE = MAX_DECIBALS - MIN_DECIBALS
+                            Decibals.append(AverageDB / RANGE)
                         }
 
                         self.output(Decibals)

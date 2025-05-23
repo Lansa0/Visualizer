@@ -8,6 +8,7 @@ final class Args
 
     static var FontColour : String?
     static var OutputText : String?
+    static var AudioRange : (Int,Int)?
     static var FixedSize  : (Int,Int)?
 }
 
@@ -47,8 +48,9 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "Colour of the visualizer",
             discussion: """
-            Supports the codes 16-231 in the standard terminal 256-colour palette
+            Defaults to running terminal settings
 
+            Supports the codes 16-231 in the standard terminal 256-colour palette
             Must be in the format <r>,<g>,<b> where each value is in the range 0-255 inclusive
             (i.e 255,255,255)
 
@@ -62,6 +64,8 @@ struct Arguments : @preconcurrency ParsableCommand
         help: ArgumentHelp(
             "The text character used for visualization",
             discussion: """
+            Defaults to "┃"
+
             Must be one character long, else will fall to default value
             Some characters may not display properly
 
@@ -69,6 +73,23 @@ struct Arguments : @preconcurrency ParsableCommand
         )
     )
     var text : String?
+
+    @Option(
+        name: [.short, .customLong("range")],
+        parsing: .unconditional,
+        help: ArgumentHelp(
+            "Sets decibal range",
+            discussion: """
+            Defaults to 0-60
+
+            Must be in the format <Lower>,<Upper> (i.e 0,60)
+            Invalid range will fall to default
+
+            """
+        )
+    )
+    var range : String?
+
 
     @Option(
         name: [.short, .customLong("size")],
@@ -101,6 +122,7 @@ struct Arguments : @preconcurrency ParsableCommand
             let Green : Int? = Int(Componenets[1])
             let Blue  : Int? = Int(Componenets[2])
 
+            // checks if r,g,b values exist and within range
             if var r = Red, 0 <= r && r <= 255, var g = Green, 0 <= g && g <= 255, var b = Blue, 0 <= b && b <= 255
             {
                 r = Int(Double(r) / 255.0 * 5.0 + 0.5)
@@ -113,14 +135,26 @@ struct Arguments : @preconcurrency ParsableCommand
             }
         }
 
-        if let text = text, text.count == 1 
+        if let text = text, text.count == 1
         {
             Args.OutputText = text
         }
 
+        if let range = range
+        {
+            let Bounds : [String.SubSequence] = range.split(separator: ",", maxSplits: 2)
+            let Lower : Int? = Int(Bounds[0])
+            let Upper : Int? = Int(Bounds[1])
+
+            if let L = Lower, let U = Upper
+            {
+                Args.AudioRange = (L,U)
+            }
+        }
+
         if let size = size
         {
-            let Dimensions : [String.SubSequence] = size.split(separator: "x",maxSplits: 2)
+            let Dimensions : [String.SubSequence] = size.split(separator: "x", maxSplits: 2)
             let Width  : Int? = Int(Dimensions[0])
             let Height : Int? = Int(Dimensions[1])
 
