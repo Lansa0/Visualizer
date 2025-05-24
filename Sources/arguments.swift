@@ -10,6 +10,8 @@ enum Args
     static var OutputText : String?
     static var AudioRange : (Int,Int)?
     static var FixedSize  : (Int,Int)?
+
+    static var ExperimentalMode : Arguments.Experimental?
 }
 
 // ignore warning
@@ -106,6 +108,22 @@ struct Arguments : @preconcurrency ParsableCommand
     )
     var size : String?
 
+    enum Experimental : EnumerableFlag
+    {
+        case rainbow
+    }
+
+    @Flag(
+        help: ArgumentHelp(
+            "Set visualizer to one of the experimental modes",
+            discussion: """
+            May be highly buggy and not compatible with other commands
+
+            """
+        )
+    )
+    var experimental : Experimental?
+
     @MainActor
     mutating func run() throws
     {
@@ -164,6 +182,12 @@ struct Arguments : @preconcurrency ParsableCommand
                 Args.FixedSize = (Width,Height)
             }
         }
+
+        if let experimental = experimental
+        {
+            Args.ExperimentalMode = experimental
+        }
+
     }
 
 }

@@ -18,9 +18,10 @@ sigintSrc.setEventHandler {
 sigintSrc.resume()
 
 let D = StreamDelegate(
-    outputText : Args.OutputText,
-    fixedSize  : Args.FixedSize,
-    audioRange : Args.AudioRange
+    outputText       : Args.OutputText,
+    fixedSize        : Args.FixedSize,
+    audioRange       : Args.AudioRange,
+    experimentalMode : Args.ExperimentalMode
 )
 
 let C = Capture(streamDelegate: D)

@@ -1,6 +1,15 @@
 @preconcurrency import ScreenCaptureKit
 import Accelerate
 
+// For rainbow output
+private let SEQUENCE = [
+    (255,0,0),
+    (255,255,0),
+    (0,255,0),
+    (0,255,255),
+    (0,0,255),
+    (255,0,255),
+]
 
 class StreamDelegate: NSObject, SCStreamDelegate, SCStreamOutput 
 {
@@ -15,7 +24,19 @@ class StreamDelegate: NSObject, SCStreamDelegate, SCStreamOutput
 
     private var PreviousHeights : [Int]?
 
-    init(outputText char : String?, fixedSize dimensions : (Int,Int)?, audioRange range : (Int,Int)?)
+    private var ExperimentalMode : Arguments.Experimental?
+
+    private var index = 1
+    private var Current = SEQUENCE[0]
+    private var Next = SEQUENCE[1]
+    private var Frame = 60.0
+
+    init(
+        outputText char : String?,
+        fixedSize dimensions : (Int,Int)?,
+        audioRange range : (Int,Int)?,
+        experimentalMode experimental : Arguments.Experimental?
+    )
     {
         if let char = char {OutputText = char}
         else {OutputText = "┃"}
@@ -30,6 +51,11 @@ class StreamDelegate: NSObject, SCStreamDelegate, SCStreamOutput
 
         if let range = range {MIN_DECIBALS = Float(range.0);MAX_DECIBALS = Float(range.1)}
         else {MIN_DECIBALS = 0.0;MAX_DECIBALS = 60.0}
+
+        if let experimental = experimental
+        {
+            ExperimentalMode = experimental
+        }
 
     }
 
@@ -116,6 +142,14 @@ class StreamDelegate: NSObject, SCStreamDelegate, SCStreamOutput
                     Decibals.append(AverageDB / RANGE)
                 }
 
+                if let Mode = ExperimentalMode
+                {
+                    switch Mode
+                    {
+                        case .rainbow: do {Rainbow(Decibals)}
+                    }
+                }
+
                 Output(Decibals)
 
             }}
@@ -157,6 +191,27 @@ class StreamDelegate: NSObject, SCStreamDelegate, SCStreamOutput
         print(Output,terminator: "")
     }
 
+    private func Rainbow(_ decibals : [Float])
+    {
+        if Frame == 1.0
+        {
+            Frame = 60.0
+            Current = Next
+            index = (index+1) % 6
+            Next = SEQUENCE[index]
+        }
+
+        let Components = lerpRGB(Current,Next,(60-Frame) / (60-1))
+        let r = Int(Double(Components.0) / 255.0 * 5.0 + 0.5)
+        let g = Int(Double(Components.1) / 255.0 * 5.0 + 0.5)
+        let b = Int(Double(Components.2) / 255.0 * 5.0 + 0.5)
+
+        Frame -= 1.0
+
+        let Code = 16 + (36 * r) + (6 * g) + b
+        print("\u{001B}[38;5;\(Code)m",terminator: "")
+    }
+
     // Utility
     private func nextPower2(_ n : Int) -> Int
     {
@@ -181,6 +236,15 @@ class StreamDelegate: NSObject, SCStreamDelegate, SCStreamOutput
             return (c,r)
         }
         return nil
+    }
+
+    func lerpRGB(_ from: (Int, Int, Int),_ to: (Int, Int, Int),_ t: Double) -> (Int,Int,Int) 
+    {
+        let x = Double(from.0) + (Double(to.0) - Double(from.0)) * t
+        let y = Double(from.1) + (Double(to.1) - Double(from.1)) * t
+        let z = Double(from.2) + (Double(to.2) - Double(from.2)) * t
+
+        return (Int(round(x)), Int(round(y)), Int(round(z)))
     }
 
 }
