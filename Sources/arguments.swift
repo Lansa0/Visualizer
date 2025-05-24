@@ -1,7 +1,7 @@
 import ArgumentParser
 
 @MainActor
-final class Args
+enum Args
 {
     static var ShowApplications     : Bool = false
     static var IncludedApplications : [String] = []
@@ -13,6 +13,7 @@ final class Args
 }
 
 // ignore warning
+// idk why i have to deal with @MainActor b.s when this isn't using any UI
 struct Arguments : @preconcurrency ParsableCommand
 {
 
@@ -106,7 +107,7 @@ struct Arguments : @preconcurrency ParsableCommand
     var size : String?
 
     @MainActor
-    mutating  func run() throws
+    mutating func run() throws
     {
         Args.ShowApplications = application_list
 

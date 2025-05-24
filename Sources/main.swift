@@ -4,6 +4,7 @@ let COLOUR_DEFAULT  : String = "\u{001B}[0;0m"
 let CLEAR_SCREEN    : String = "\u{1b}[H\u{1b}[2J"
 let HIDE_CURSOR     : String = "\u{001B}[?25l"
 let SHOW_CURSOR     : String = "\u{001B}[?25h"
+let RESET_CURSOR    : String = "\u{001B}[H"
 
 Arguments.main()
 
@@ -16,11 +17,13 @@ sigintSrc.setEventHandler {
 }
 sigintSrc.resume()
 
-let C = Capture(
-    outputText       : Args.OutputText,
-    fixedSize        : Args.FixedSize,
-    audioRange       : Args.AudioRange
+let D = StreamDelegate(
+    outputText : Args.OutputText,
+    fixedSize  : Args.FixedSize,
+    audioRange : Args.AudioRange
 )
+
+let C = Capture(streamDelegate: D)
 
 Task
 {
